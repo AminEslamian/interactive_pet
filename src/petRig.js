@@ -1,5 +1,6 @@
 import { soundManager } from './sound.js';
 import { getRandomDialogue } from './dialogue.js';
+import { MikoMeshEngine } from './mikoMeshEngine.js';
 
 export class MinimalPetRig {
   constructor(containerEl, onTalkCallback) {
@@ -8,34 +9,15 @@ export class MinimalPetRig {
 
     // States: 'awake', 'dot'
     this.state = 'awake';
-    this.expression = 'normal'; // 'normal', 'happy'
     this.isHolding = false;
     this.holdStartTime = 0;
     this.holdInterval = null;
-
-    // Movement & Dragging (Squash & Stretch)
-    this.isDragging = false;
     this.hasMoved = false;
     this.dragStartX = 0;
     this.dragStartY = 0;
-    this.scaleX = 1;
-    this.scaleY = 1;
-    this.velScaleX = 0;
-    this.velScaleY = 0;
-    this.posX = 0;
-    this.posY = 0;
-
-    // Gaze tracking & tilt
-    this.cursorX = window.innerWidth / 2;
-    this.cursorY = window.innerHeight / 2;
-    this.headTilt = 0;
-    this.breath = 0;
-
-    // Blinking timer
-    this.blinkTimer = 0;
-    this.isBlinking = false;
 
     this.initDOM();
+    this.initEngine();
     this.bindEvents();
     this.startLoop();
   }
@@ -47,7 +29,7 @@ export class MinimalPetRig {
         <!-- Sassy & Teasing Speech Bubble -->
         <div class="miko-speech-bubble" id="mikoSpeechBubble">
           <div class="speech-bubble-inner">
-            <span class="bubble-text" id="mikoBubbleText">Tap or hold me to start our day~</span>
+            <span class="bubble-text" id="mikoBubbleText">Tap or hold me to start our day, mortal~</span>
             <span class="bubble-cursor" id="mikoBubbleCursor"></span>
           </div>
           <div class="speech-tail"></div>
@@ -67,10 +49,10 @@ export class MinimalPetRig {
               <div class="spirit-glow"></div>
               <span class="spirit-icon">🦊</span>
             </div>
-            <div class="dot-hover-hint">Hold to reveal</div>
+            <div class="dot-hover-hint">Hold to reveal Miko</div>
           </div>
 
-          <!-- 2. AUTHENTIC LIVING MIKO FOX -->
+          <!-- 2. AUTHENTIC LIVING MIKO FOX (WebGL 2.5D Mesh Rigged) -->
           <div class="miko-fox-actor" id="mikoFoxActor">
             
             <!-- Hold Charging Radial Indicator -->
@@ -78,10 +60,13 @@ export class MinimalPetRig {
               <circle class="hold-ring-circle" id="foxHoldRing" cx="100" cy="100" r="92" />
             </svg>
 
-            <!-- Fox Image Layers (Normal & Happy/Blink) -->
-            <div class="miko-sprite-container" id="mikoSpriteContainer">
-              <img src="./miko_fox_cutout.png" alt="Yae Miko Fox" class="miko-fox-img normal active" id="mikoImgNormal" />
-              <img src="./miko_fox_happy.png" alt="Yae Miko Fox Happy" class="miko-fox-img happy" id="mikoImgHappy" />
+            <!-- Decorative Floating Paper Fans (Parallax Bobbing) -->
+            <div class="ambient-fan fan-left" id="ambientFanLeft">🪭</div>
+            <div class="ambient-fan fan-right" id="ambientFanRight">🪭</div>
+
+            <!-- WebGL Living Mesh Canvas -->
+            <div class="miko-mesh-container" id="mikoMeshContainer">
+              <canvas id="mikoMeshCanvas" class="miko-mesh-canvas"></canvas>
               <div class="miko-cuddle-aura" id="mikoCuddleAura"></div>
             </div>
 
@@ -103,15 +88,16 @@ export class MinimalPetRig {
     this.stage = document.getElementById('mikoEntityStage');
     this.dotMode = document.getElementById('zenDotMode');
     this.foxActor = document.getElementById('mikoFoxActor');
-    this.spriteContainer = document.getElementById('mikoSpriteContainer');
-    this.imgNormal = document.getElementById('mikoImgNormal');
-    this.imgHappy = document.getElementById('mikoImgHappy');
+    this.meshContainer = document.getElementById('mikoMeshContainer');
+    this.meshCanvas = document.getElementById('mikoMeshCanvas');
     this.cuddleAura = document.getElementById('mikoCuddleAura');
     this.groundShadow = document.getElementById('mikoGroundShadow');
     this.dotHoldProgress = document.getElementById('dotHoldProgress');
     this.dotTimerProgress = document.getElementById('dotTimerProgress');
     this.foxHoldRing = document.getElementById('foxHoldRing');
     this.fxStage = document.getElementById('mikoFxStage');
+    this.fanLeft = document.getElementById('ambientFanLeft');
+    this.fanRight = document.getElementById('ambientFanRight');
 
     // Ring stroke setup
     this.dotRingCircumference = 2 * Math.PI * 46;
@@ -133,25 +119,34 @@ export class MinimalPetRig {
     }
   }
 
-  bindEvents() {
-    // Window cursor tracking for head tilt
-    window.addEventListener('mousemove', (e) => {
-      this.cursorX = e.clientX;
-      this.cursorY = e.clientY;
+  initEngine() {
+    this.engine = new MikoMeshEngine(this.meshCanvas);
+  }
 
-      if (this.isDragging && this.state === 'awake') {
+  bindEvents() {
+    // Window cursor tracking for 2.5D head gaze & tilt
+    window.addEventListener('mousemove', (e) => {
+      if (this.engine) {
+        this.engine.setCursor(e.clientX, e.clientY);
+      }
+
+      // Parallax floating fans
+      if (this.fanLeft && this.fanRight) {
+        const dx = (e.clientX - window.innerWidth / 2) * 0.015;
+        const dy = (e.clientY - window.innerHeight / 2) * 0.015;
+        this.fanLeft.style.transform = `translate(${dx}px, ${dy}px) rotate(-15deg)`;
+        this.fanRight.style.transform = `translate(${-dx}px, ${dy}px) rotate(15deg)`;
+      }
+
+      if (this.isHolding && this.state === 'awake') {
         const dx = e.clientX - this.dragStartX;
         const dy = e.clientY - this.dragStartY;
         if (Math.hypot(dx, dy) > 8) {
           this.hasMoved = true;
         }
-
-        // Elastic volume-preserving stretch
-        const stretchAmount = -dy * 0.0035;
-        this.scaleY = Math.max(0.65, Math.min(1.65, 1 + stretchAmount));
-        this.scaleX = 1 / Math.sqrt(this.scaleY);
-        this.posX = dx * 0.45;
-        this.posY = dy * 0.45;
+        if (this.engine) {
+          this.engine.updateDrag(e.clientX, e.clientY);
+        }
       }
     });
 
@@ -159,17 +154,17 @@ export class MinimalPetRig {
     window.addEventListener('touchmove', (e) => {
       if (e.touches.length > 0) {
         const touch = e.touches[0];
-        this.cursorX = touch.clientX;
-        this.cursorY = touch.clientY;
+        if (this.engine) {
+          this.engine.setCursor(touch.clientX, touch.clientY);
+        }
 
-        if (this.isDragging && this.state === 'awake') {
+        if (this.isHolding && this.state === 'awake') {
           const dx = touch.clientX - this.dragStartX;
           const dy = touch.clientY - this.dragStartY;
           if (Math.hypot(dx, dy) > 8) this.hasMoved = true;
-          this.scaleY = Math.max(0.65, Math.min(1.65, 1 + -dy * 0.0035));
-          this.scaleX = 1 / Math.sqrt(this.scaleY);
-          this.posX = dx * 0.45;
-          this.posY = dy * 0.45;
+          if (this.engine) {
+            this.engine.updateDrag(touch.clientX, touch.clientY);
+          }
         }
       }
     }, { passive: true });
@@ -203,12 +198,16 @@ export class MinimalPetRig {
 
   startHold(clientX, clientY) {
     this.isHolding = true;
-    this.isDragging = true;
     this.hasMoved = false;
     this.dragStartX = clientX;
     this.dragStartY = clientY;
     this.holdStartTime = performance.now();
     soundManager.ensureRunning();
+
+    if (this.engine) {
+      this.engine.isHolding = true;
+      this.engine.startDrag(clientX, clientY);
+    }
 
     if (this.holdInterval) clearInterval(this.holdInterval);
     const holdRequired = this.state === 'dot' ? 380 : 700;
@@ -232,7 +231,7 @@ export class MinimalPetRig {
 
         // Soft cuddle reaction while holding
         if (progress > 0.25) {
-          this.setExpression('happy');
+          if (this.engine) this.engine.setExpression('happy');
           if (this.cuddleAura) this.cuddleAura.classList.add('active');
         }
       }
@@ -248,7 +247,11 @@ export class MinimalPetRig {
   endHold() {
     if (!this.isHolding) return;
     this.isHolding = false;
-    this.isDragging = false;
+
+    if (this.engine) {
+      this.engine.isHolding = false;
+      this.engine.endDrag();
+    }
 
     if (this.holdInterval) clearInterval(this.holdInterval);
 
@@ -261,21 +264,18 @@ export class MinimalPetRig {
 
     // Reset happy expression after delay
     setTimeout(() => {
-      if (!this.isHolding && !this.isBlinking) {
-        this.setExpression('normal');
+      if (!this.isHolding && this.engine) {
+        this.engine.setExpression('normal');
       }
     }, 1200);
 
-    // Quick tap
+    // Quick tap vs Stretch Release
     if (!this.hasMoved && duration < 320) {
       this.onQuickTap();
     } else if (this.hasMoved) {
       // Released after stretch: play boing!
-      const tension = Math.abs(this.scaleY - 1);
-      soundManager.playStretchBoing(tension);
-      if (tension > 0.2) {
-        this.triggerDialogue(getRandomDialogue('stretched'));
-      }
+      soundManager.playStretchBoing(0.8);
+      this.triggerDialogue(getRandomDialogue('stretched'));
     }
   }
 
@@ -298,8 +298,10 @@ export class MinimalPetRig {
       soundManager.playBabble(1.2);
     } else {
       soundManager.playBabble(1.0);
-      this.setExpression('happy');
-      setTimeout(() => this.setExpression('normal'), 600);
+      if (this.engine) {
+        this.engine.setExpression('happy');
+        setTimeout(() => this.engine.setExpression('normal'), 650);
+      }
       this.triggerDialogue(getRandomDialogue('pokes'));
     }
   }
@@ -321,46 +323,18 @@ export class MinimalPetRig {
       this.foxActor.style.display = 'none';
     } else {
       this.dotMode.style.display = 'none';
-      this.foxActor.style.display = 'block';
+      this.foxActor.style.display = 'flex';
     }
   }
 
-  setExpression(expr) {
-    this.expression = expr;
-    if (expr === 'happy') {
-      this.imgNormal.classList.remove('active');
-      this.imgHappy.classList.add('active');
-    } else {
-      this.imgHappy.classList.remove('active');
-      this.imgNormal.classList.add('active');
-    }
-  }
-
-  // Cute Full Stretch Animation
+  // Cute Stretch Together
   doStretchAnimation() {
     this.setMode('awake');
     this.triggerDialogue("Nnngh... stretch those front paws! Mmm, that feels wonderful. Now it's your turn, mortal!");
     soundManager.playStretchBoing(0.8);
-    this.setExpression('happy');
-
-    const startTime = performance.now();
-    const duration = 2400;
-
-    const step = (now) => {
-      const t = Math.min(1, (now - startTime) / duration);
-      // Bow and arch spine curve
-      const p = Math.sin(t * Math.PI);
-      this.scaleY = 1 + p * 0.22;
-      this.scaleX = 1 - p * 0.12;
-      this.posY = -p * 20;
-
-      if (t < 1) {
-        requestAnimationFrame(step);
-      } else {
-        this.setExpression('normal');
-      }
-    };
-    requestAnimationFrame(step);
+    if (this.engine) {
+      this.engine.doStretchTogether();
+    }
   }
 
   // Typewriter dialogue display
@@ -394,7 +368,7 @@ export class MinimalPetRig {
   }
 
   spawnHearts() {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       const heart = document.createElement('div');
       heart.className = 'miko-sparkle';
       heart.textContent = Math.random() > 0.4 ? '💖' : '🌸';
@@ -411,7 +385,7 @@ export class MinimalPetRig {
     this.dotTimerProgress.style.strokeDashoffset = `${offset}`;
   }
 
-  // Smooth 60 FPS Animation Loop
+  // Smooth 60 FPS WebGL Mesh Animation Loop
   startLoop() {
     let lastTime = performance.now();
 
@@ -419,62 +393,9 @@ export class MinimalPetRig {
       const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
 
-      // 1. Organic Breathing Rhythm
-      this.breath = Math.sin(now * 0.0022) * 3;
-
-      // 2. Spring Recovery for Squash & Stretch
-      if (!this.isDragging) {
-        const k = 160;
-        const d = 12;
-        const fY = (1.0 - this.scaleY) * k - this.velScaleY * d;
-        this.velScaleY += fY * dt;
-        this.scaleY += this.velScaleY * dt;
-
-        const fX = (1.0 - this.scaleX) * k - this.velScaleX * d;
-        this.velScaleX += fX * dt;
-        this.scaleX += this.velScaleX * dt;
-
-        this.posX += (0 - this.posX) * 10 * dt;
-        this.posY += (0 - this.posY) * 10 * dt;
-      }
-
-      // 3. Subtle Head Tilt toward Cursor
-      if (this.foxActor) {
-        const rect = this.foxActor.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height * 0.4;
-        const angleToMouse = Math.atan2(this.cursorY - centerY, this.cursorX - centerX);
-        const targetTilt = Math.max(-5, Math.min(5, (angleToMouse - Math.PI / 2) * (180 / Math.PI) * 0.08));
-        this.headTilt += (targetTilt - this.headTilt) * 6 * dt;
-
-        // Apply transforms
-        const effectiveY = this.posY + this.breath;
-        this.spriteContainer.style.transform = `
-          translate(${this.posX}px, ${effectiveY}px)
-          scale(${this.scaleX}, ${this.scaleY})
-          rotate(${this.headTilt}deg)
-        `;
-
-        if (this.groundShadow) {
-          const shadowScale = (1.8 - this.scaleY) * 0.85;
-          this.groundShadow.style.transform = `scale(${shadowScale}, 0.85)`;
-        }
-      }
-
-      // 4. Natural Blinking Cycle
-      this.blinkTimer += dt;
-      if (!this.isBlinking && this.blinkTimer > 3.6 + Math.random() * 2.5) {
-        this.isBlinking = true;
-        this.blinkTimer = 0;
-        if (this.expression === 'normal') {
-          this.setExpression('happy');
-          setTimeout(() => {
-            if (this.expression === 'happy' && !this.isHolding) {
-              this.setExpression('normal');
-            }
-            this.isBlinking = false;
-          }, 140);
-        }
+      if (this.state === 'awake' && this.engine) {
+        this.engine.update(dt, now);
+        this.engine.render();
       }
 
       requestAnimationFrame(loop);

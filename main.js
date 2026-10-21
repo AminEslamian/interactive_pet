@@ -75,13 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const btnCurlSleep = document.getElementById('btnCurlSleep');
   btnCurlSleep.addEventListener('click', () => {
-    pet.setMode('sleep');
-    pet.triggerDialogue("Curling up into a quiet slumber. Hold me anytime to wake me.");
-    updateModeButtons('sleep');
+    pet.setMode('dot');
+    pet.triggerDialogue("Yaaawn... Guuji Yae requires her sacred beauty nap. Hold my spirit flame whenever you need me~");
+    updateModeButtons('dot');
   });
 
   // Welcome greeting
   setTimeout(() => {
-    pet.triggerDialogue("Tranquility welcomes you. I am here to watch over your focus and remind you to rest every 25 minutes.");
+    pet.triggerDialogue("Ah, you're finally here, little one! Guuji Yae is ready to supervise your work today. Don't you dare slack off~");
   }, 800);
 });

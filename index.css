@@ -279,39 +279,72 @@ body {
 /* ========================================= */
 .miko-fox-actor {
   position: relative;
-  width: 380px;
-  height: 400px;
+  width: 480px;
+  height: 500px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.miko-sprite-container {
+.miko-mesh-container {
   position: relative;
-  width: 100%;
-  height: 100%;
-  transform-origin: 50% 85%;
-  transition: filter 0.2s ease;
+  width: 480px;
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.25s ease;
 }
 
-.miko-fox-actor:hover .miko-sprite-container {
-  filter: drop-shadow(0 12px 35px rgba(254, 209, 214, 0.35));
+.miko-mesh-canvas {
+  width: 480px;
+  height: 500px;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 25px rgba(254, 209, 214, 0.25));
+  transition: filter 0.3s ease;
 }
 
-.miko-fox-img {
+.miko-fox-actor:hover .miko-mesh-canvas {
+  filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 35px rgba(254, 209, 214, 0.45));
+}
+
+.miko-mesh-canvas:active {
+  cursor: grabbing;
+}
+
+/* Ambient Floating Fans */
+.ambient-fan {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  opacity: 0;
-  transition: opacity 0.12s ease-in-out;
+  font-size: 28px;
+  opacity: 0.65;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
   pointer-events: none;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  z-index: 5;
 }
 
-.miko-fox-img.active {
-  opacity: 1;
+.ambient-fan.fan-left {
+  top: 42%;
+  left: 20px;
+  animation: fanLevitateL 4s ease-in-out infinite;
+}
+
+.ambient-fan.fan-right {
+  top: 38%;
+  right: 20px;
+  animation: fanLevitateR 4.5s ease-in-out infinite;
+}
+
+@keyframes fanLevitateL {
+  0%, 100% { transform: translateY(0px) rotate(-12deg); }
+  50% { transform: translateY(-10px) rotate(-8deg); }
+}
+
+@keyframes fanLevitateR {
+  0%, 100% { transform: translateY(0px) rotate(14deg); }
+  50% { transform: translateY(-12px) rotate(18deg); }
 }
 
 /* Cuddle Aura Pulse */
@@ -348,10 +381,10 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 360px;
-  height: 360px;
-  margin-top: -180px;
-  margin-left: -180px;
+  width: 420px;
+  height: 420px;
+  margin-top: -210px;
+  margin-left: -210px;
   pointer-events: none;
   transform: rotate(-90deg);
   z-index: 60;
