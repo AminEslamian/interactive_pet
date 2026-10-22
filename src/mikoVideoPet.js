@@ -15,9 +15,9 @@ export class MikoVideoPet {
       return;
     }
 
-    // Miniature Resolution setup (small like the dot)
-    this.width = 88;
-    this.height = 70;
+    // Balanced desktop pet resolution (200x155)
+    this.width = 200;
+    this.height = 155;
     this.dpr = Math.min(2, window.devicePixelRatio || 1);
     this.canvas.width = this.width * this.dpr;
     this.canvas.height = this.height * this.dpr;
@@ -166,14 +166,14 @@ export class MikoVideoPet {
 
     // Quad geometry (4 vertices, 2 triangles)
     // 1920x1440 has aspect ratio 4:3 (1.333)
-    const quadW = 84;
-    const quadH = 63;
+    const quadW = 190;
+    const quadH = 142;
 
     const positions = new Float32Array([
-      -quadW / 2, -quadH / 2 + 2,
-       quadW / 2, -quadH / 2 + 2,
-      -quadW / 2,  quadH / 2 + 2,
-       quadW / 2,  quadH / 2 + 2
+      -quadW / 2, -quadH / 2 + 5,
+       quadW / 2, -quadH / 2 + 5,
+      -quadW / 2,  quadH / 2 + 5,
+       quadW / 2,  quadH / 2 + 5
     ]);
 
     const texCoords = new Float32Array([

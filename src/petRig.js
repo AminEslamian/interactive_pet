@@ -64,8 +64,8 @@ export class MinimalPetRig {
           <div class="miko-fox-actor" id="mikoFoxActor">
             
             <!-- Hold Charging Radial Indicator for Cuddle -->
-            <svg class="fox-hold-ring" viewBox="0 0 84 84">
-              <circle class="hold-ring-circle" id="foxHoldRing" cx="42" cy="42" r="38" />
+            <svg class="fox-hold-ring" viewBox="0 0 160 160">
+              <circle class="hold-ring-circle" id="foxHoldRing" cx="80" cy="80" r="74" />
             </svg>
 
             <!-- Living Animation Canvas -->
@@ -121,7 +121,7 @@ export class MinimalPetRig {
     }
 
     // Fox ring setup
-    this.foxRingCircumference = 2 * Math.PI * 38;
+    this.foxRingCircumference = 2 * Math.PI * 74;
     if (this.foxHoldRing) {
       this.foxHoldRing.style.strokeDasharray = `${this.foxRingCircumference}`;
       this.foxHoldRing.style.strokeDashoffset = `${this.foxRingCircumference}`;
