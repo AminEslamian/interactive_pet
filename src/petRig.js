@@ -1,6 +1,6 @@
 import { soundManager } from './sound.js';
 import { getRandomDialogue } from './dialogue.js';
-import { MikoMeshEngine } from './mikoMeshEngine.js';
+import { MikoVideoPet } from './mikoVideoPet.js';
 
 export class MinimalPetRig {
   constructor(containerEl, onTalkCallback) {
@@ -12,24 +12,20 @@ export class MinimalPetRig {
     this.isHolding = false;
     this.holdStartTime = 0;
     this.holdInterval = null;
-    this.hasMoved = false;
-    this.dragStartX = 0;
-    this.dragStartY = 0;
 
     this.initDOM();
     this.initEngine();
     this.bindEvents();
-    this.startLoop();
   }
 
   initDOM() {
     this.container.innerHTML = `
       <div class="miko-living-wrapper" id="mikoLivingWrapper">
         
-        <!-- Sassy & Teasing Speech Bubble -->
+        <!-- Sassy & Playful Speech Bubble -->
         <div class="miko-speech-bubble" id="mikoSpeechBubble">
           <div class="speech-bubble-inner">
-            <span class="bubble-text" id="mikoBubbleText">Tap or hold me to start our day, mortal~</span>
+            <span class="bubble-text" id="mikoBubbleText">Tap me for guidance or hold to rest, mortal~</span>
             <span class="bubble-cursor" id="mikoBubbleCursor"></span>
           </div>
           <div class="speech-tail"></div>
@@ -47,12 +43,12 @@ export class MinimalPetRig {
             </svg>
             <div class="spirit-core">
               <div class="spirit-glow"></div>
-              <span class="spirit-icon">🦊</span>
+              <img src="./miko_avatar.png" class="spirit-avatar-img" alt="Miko Dot" />
             </div>
             <div class="dot-hover-hint">Hold to reveal Miko</div>
           </div>
 
-          <!-- 2. AUTHENTIC LIVING MIKO FOX (WebGL 2.5D Mesh Rigged) -->
+          <!-- 2. LIVING MIKO FOX (AI-Generated Movement & Reaction) -->
           <div class="miko-fox-actor" id="mikoFoxActor">
             
             <!-- Hold Charging Radial Indicator -->
@@ -60,11 +56,11 @@ export class MinimalPetRig {
               <circle class="hold-ring-circle" id="foxHoldRing" cx="100" cy="100" r="92" />
             </svg>
 
-            <!-- Decorative Floating Paper Fans (Parallax Bobbing) -->
+            <!-- Decorative Floating Paper Fans -->
             <div class="ambient-fan fan-left" id="ambientFanLeft">🪭</div>
             <div class="ambient-fan fan-right" id="ambientFanRight">🪭</div>
 
-            <!-- WebGL Living Mesh Canvas -->
+            <!-- Living Animation Canvas -->
             <div class="miko-mesh-container" id="mikoMeshContainer">
               <canvas id="mikoMeshCanvas" class="miko-mesh-canvas"></canvas>
               <div class="miko-cuddle-aura" id="mikoCuddleAura"></div>
@@ -120,11 +116,11 @@ export class MinimalPetRig {
   }
 
   initEngine() {
-    this.engine = new MikoMeshEngine(this.meshCanvas);
+    this.engine = new MikoVideoPet(this.meshCanvas);
   }
 
   bindEvents() {
-    // Window cursor tracking for 2.5D head gaze & tilt
+    // Window cursor tracking for subtle gaze tilt & fan parallax
     window.addEventListener('mousemove', (e) => {
       if (this.engine) {
         this.engine.setCursor(e.clientX, e.clientY);
@@ -132,39 +128,19 @@ export class MinimalPetRig {
 
       // Parallax floating fans
       if (this.fanLeft && this.fanRight) {
-        const dx = (e.clientX - window.innerWidth / 2) * 0.015;
-        const dy = (e.clientY - window.innerHeight / 2) * 0.015;
-        this.fanLeft.style.transform = `translate(${dx}px, ${dy}px) rotate(-15deg)`;
-        this.fanRight.style.transform = `translate(${-dx}px, ${dy}px) rotate(15deg)`;
-      }
-
-      if (this.isHolding && this.state === 'awake') {
-        const dx = e.clientX - this.dragStartX;
-        const dy = e.clientY - this.dragStartY;
-        if (Math.hypot(dx, dy) > 8) {
-          this.hasMoved = true;
-        }
-        if (this.engine) {
-          this.engine.updateDrag(e.clientX, e.clientY);
-        }
+        const dx = (e.clientX - window.innerWidth / 2) * 0.012;
+        const dy = (e.clientY - window.innerHeight / 2) * 0.012;
+        this.fanLeft.style.transform = `translate(${dx}px, ${dy}px) rotate(-12deg)`;
+        this.fanRight.style.transform = `translate(${-dx}px, ${dy}px) rotate(14deg)`;
       }
     });
 
-    // Touch support
+    // Touch support for gaze
     window.addEventListener('touchmove', (e) => {
       if (e.touches.length > 0) {
         const touch = e.touches[0];
         if (this.engine) {
           this.engine.setCursor(touch.clientX, touch.clientY);
-        }
-
-        if (this.isHolding && this.state === 'awake') {
-          const dx = touch.clientX - this.dragStartX;
-          const dy = touch.clientY - this.dragStartY;
-          if (Math.hypot(dx, dy) > 8) this.hasMoved = true;
-          if (this.engine) {
-            this.engine.updateDrag(touch.clientX, touch.clientY);
-          }
         }
       }
     }, { passive: true });
@@ -172,16 +148,14 @@ export class MinimalPetRig {
     // Press & Hold on Stage
     this.stage.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return;
-      this.startHold(e.clientX, e.clientY);
+      this.startHold();
     });
 
     this.stage.addEventListener('touchstart', (e) => {
-      if (e.touches.length > 0) {
-        this.startHold(e.touches[0].clientX, e.touches[0].clientY);
-      }
+      this.startHold();
     }, { passive: true });
 
-    // Release Hold / Drag
+    // Release Hold
     window.addEventListener('mouseup', () => this.endHold());
     window.addEventListener('touchend', () => this.endHold());
 
@@ -196,21 +170,13 @@ export class MinimalPetRig {
     });
   }
 
-  startHold(clientX, clientY) {
+  startHold() {
     this.isHolding = true;
-    this.hasMoved = false;
-    this.dragStartX = clientX;
-    this.dragStartY = clientY;
     this.holdStartTime = performance.now();
     soundManager.ensureRunning();
 
-    if (this.engine) {
-      this.engine.isHolding = true;
-      this.engine.startDrag(clientX, clientY);
-    }
-
     if (this.holdInterval) clearInterval(this.holdInterval);
-    const holdRequired = this.state === 'dot' ? 380 : 700;
+    const holdRequired = this.state === 'dot' ? 380 : 650;
 
     this.holdInterval = setInterval(() => {
       if (!this.isHolding) {
@@ -231,7 +197,7 @@ export class MinimalPetRig {
 
         // Soft cuddle reaction while holding
         if (progress > 0.25) {
-          if (this.engine) this.engine.setExpression('happy');
+          if (this.engine) this.engine.playReaction();
           if (this.cuddleAura) this.cuddleAura.classList.add('active');
         }
       }
@@ -248,11 +214,6 @@ export class MinimalPetRig {
     if (!this.isHolding) return;
     this.isHolding = false;
 
-    if (this.engine) {
-      this.engine.isHolding = false;
-      this.engine.endDrag();
-    }
-
     if (this.holdInterval) clearInterval(this.holdInterval);
 
     // Reset hold rings
@@ -262,20 +223,14 @@ export class MinimalPetRig {
 
     const duration = performance.now() - this.holdStartTime;
 
-    // Reset happy expression after delay
-    setTimeout(() => {
-      if (!this.isHolding && this.engine) {
-        this.engine.setExpression('normal');
-      }
-    }, 1200);
-
-    // Quick tap vs Stretch Release
-    if (!this.hasMoved && duration < 320) {
+    // Quick tap
+    if (duration < 280) {
       this.onQuickTap();
-    } else if (this.hasMoved) {
-      // Released after stretch: play boing!
-      soundManager.playStretchBoing(0.8);
-      this.triggerDialogue(getRandomDialogue('stretched'));
+    } else {
+      // Releasing after hold: let reaction conclude
+      if (this.engine) {
+        this.engine.stopReaction();
+      }
     }
   }
 
@@ -285,8 +240,9 @@ export class MinimalPetRig {
 
     if (this.state === 'dot') {
       this.setMode('awake');
-      this.triggerDialogue("Ah, you called for Guuji Yae? I'm right here to watch over you~");
+      this.triggerDialogue("Ah, you called for Guuji Yae? I'm right here to supervise your work~");
     } else {
+      if (this.engine) this.engine.playReaction();
       this.triggerDialogue(getRandomDialogue('holding'));
       soundManager.playCompletionChime();
     }
@@ -299,8 +255,7 @@ export class MinimalPetRig {
     } else {
       soundManager.playBabble(1.0);
       if (this.engine) {
-        this.engine.setExpression('happy');
-        setTimeout(() => this.engine.setExpression('normal'), 650);
+        this.engine.playReaction();
       }
       this.triggerDialogue(getRandomDialogue('pokes'));
     }
@@ -327,13 +282,13 @@ export class MinimalPetRig {
     }
   }
 
-  // Cute Stretch Together
+  // Play animation on stretch / advice
   doStretchAnimation() {
     this.setMode('awake');
-    this.triggerDialogue("Nnngh... stretch those front paws! Mmm, that feels wonderful. Now it's your turn, mortal!");
-    soundManager.playStretchBoing(0.8);
+    this.triggerDialogue("Nnngh... stretching paws and fluffing fur! Now it's your turn to stretch, mortal!");
+    soundManager.playCompletionChime();
     if (this.engine) {
-      this.engine.doStretchTogether();
+      this.engine.playReaction();
     }
   }
 
@@ -383,24 +338,5 @@ export class MinimalPetRig {
     if (!this.dotTimerProgress) return;
     const offset = this.timerCircumference * (1 - fraction);
     this.dotTimerProgress.style.strokeDashoffset = `${offset}`;
-  }
-
-  // Smooth 60 FPS WebGL Mesh Animation Loop
-  startLoop() {
-    let lastTime = performance.now();
-
-    const loop = (now) => {
-      const dt = Math.min(0.05, (now - lastTime) / 1000);
-      lastTime = now;
-
-      if (this.state === 'awake' && this.engine) {
-        this.engine.update(dt, now);
-        this.engine.render();
-      }
-
-      requestAnimationFrame(loop);
-    };
-
-    requestAnimationFrame(loop);
   }
 }
