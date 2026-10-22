@@ -1,6 +1,12 @@
 const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
+
+app.setName('miko-desktop-pet');
+
+// Hardware-accelerated transparent rendering
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
 
 let mainWindow = null;
 let tray = null;
@@ -45,8 +51,19 @@ function getDefaultPosition() {
   return { x, y };
 }
 
-// Command line flags for hardware-accelerated transparent rendering
-app.commandLine.appendSwitch('ignore-gpu-blocklist');
+function checkDevServer(url, timeoutMs = 250) {
+  return new Promise((resolve) => {
+    const req = http.get(url, (res) => {
+      resolve(true);
+      res.resume();
+    });
+    req.on('error', () => resolve(false));
+    req.setTimeout(timeoutMs, () => {
+      req.abort();
+      resolve(false);
+    });
+  });
+}
 
 let dotPosition = null;
 
@@ -60,6 +77,7 @@ function createWindow() {
     x: dotPosition.x,
     y: dotPosition.y,
     transparent: true,
+    backgroundColor: '#00000000',
     frame: false,
     alwaysOnTop: true,
     resizable: false,
@@ -75,11 +93,17 @@ function createWindow() {
 
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
 
-  // Load URL: try Vite dev server first, fallback to dist/index.html
+  // Load URL: check if dev server is listening; if not, load standalone dist bundle directly
   const devUrl = 'http://localhost:3000';
-  mainWindow.loadURL(devUrl).catch(() => {
-    const prodPath = path.join(__dirname, '../dist/index.html');
-    mainWindow.loadFile(prodPath);
+  const prodPath = path.join(__dirname, '../dist/index.html');
+
+  checkDevServer(devUrl).then((isDevUp) => {
+    if (!mainWindow) return;
+    if (isDevUp) {
+      mainWindow.loadURL(devUrl);
+    } else {
+      mainWindow.loadFile(prodPath);
+    }
   });
 
   mainWindow.on('closed', () => {
@@ -93,13 +117,11 @@ function switchMode(mode) {
   if (!mainWindow) return;
   currentMode = mode;
 
-  const [currentX, currentY] = mainWindow.getPosition();
   const primaryDisplay = screen.getPrimaryDisplay();
   const { workArea } = primaryDisplay;
 
   if (mode === 'awake') {
     // Expanding to Fox Mode
-    // Calculate new position so Miko expands upwards and to the left from the dot
     let newX = Math.round(dotPosition.x - (FOX_WIDTH - DOT_SIZE) / 2);
     let newY = Math.round(dotPosition.y - (FOX_HEIGHT - DOT_SIZE));
 
@@ -117,11 +139,9 @@ function switchMode(mode) {
     }, true);
   } else {
     // Shrinking back to Dot Mode
-    // Return to the saved dot position
     let x = dotPosition.x;
     let y = dotPosition.y;
 
-    // Clamp
     if (x < workArea.x) x = workArea.x;
     if (x + DOT_SIZE > workArea.x + workArea.width) x = workArea.x + workArea.width - DOT_SIZE;
     if (y < workArea.y) y = workArea.y;
