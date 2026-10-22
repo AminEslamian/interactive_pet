@@ -1,7 +1,6 @@
 const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const http = require('http');
 
 app.setName('miko-desktop-pet');
 
@@ -51,20 +50,6 @@ function getDefaultPosition() {
   return { x, y };
 }
 
-function checkDevServer(url, timeoutMs = 250) {
-  return new Promise((resolve) => {
-    const req = http.get(url, (res) => {
-      resolve(true);
-      res.resume();
-    });
-    req.on('error', () => resolve(false));
-    req.setTimeout(timeoutMs, () => {
-      req.abort();
-      resolve(false);
-    });
-  });
-}
-
 let dotPosition = null;
 
 function createWindow() {
@@ -93,18 +78,14 @@ function createWindow() {
 
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
 
-  // Load URL: check if dev server is listening; if not, load standalone dist bundle directly
-  const devUrl = 'http://localhost:3000';
+  // Always load local bundled standalone app directly
   const prodPath = path.join(__dirname, '../dist/index.html');
 
-  checkDevServer(devUrl).then((isDevUp) => {
-    if (!mainWindow) return;
-    if (isDevUp) {
-      mainWindow.loadURL(devUrl);
-    } else {
-      mainWindow.loadFile(prodPath);
-    }
-  });
+  if (!app.isPackaged && process.env.VITE_DEV) {
+    mainWindow.loadURL('http://localhost:3000');
+  } else {
+    mainWindow.loadFile(prodPath);
+  }
 
   mainWindow.on('closed', () => {
     mainWindow = null;

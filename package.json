@@ -1,20 +1,43 @@
 {
   "name": "miko-desktop-pet",
   "version": "1.0.0",
+  "description": "Minimal interactive kitsune desktop pet",
+  "author": "Yae Miko",
   "private": true,
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite --port 3000 --host",
     "build": "vite build",
     "preview": "vite preview",
     "electron": "electron .",
     "start": "electron .",
-    "desktop": "vite build && electron ."
+    "desktop": "vite build && electron .",
+    "dist": "vite build && electron-builder --win",
+    "dist:portable": "vite build && electron-builder --win portable",
+    "dist:dir": "vite build && electron-builder --dir"
   },
-  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.miko.desktoppet",
+    "productName": "Miko Desktop Pet",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "public/miko_avatar.png"
+    }
+  },
   "devDependencies": {
     "canvas-confetti": "^1.9.4",
     "electron": "^45.0.0",
+    "electron-builder": "^26.15.3",
     "vite": "^6.0.0"
   }
 }
