@@ -7,7 +7,9 @@
     "dev": "vite --port 3000 --host",
     "build": "vite build",
     "preview": "vite preview",
-    "electron": "electron ."
+    "electron": "electron .",
+    "start": "electron .",
+    "desktop": "vite build && electron ."
   },
   "main": "electron/main.cjs",
   "devDependencies": {

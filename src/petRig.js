@@ -64,13 +64,9 @@ export class MinimalPetRig {
           <div class="miko-fox-actor" id="mikoFoxActor">
             
             <!-- Hold Charging Radial Indicator for Cuddle -->
-            <svg class="fox-hold-ring" viewBox="0 0 200 200">
-              <circle class="hold-ring-circle" id="foxHoldRing" cx="100" cy="100" r="92" />
+            <svg class="fox-hold-ring" viewBox="0 0 84 84">
+              <circle class="hold-ring-circle" id="foxHoldRing" cx="42" cy="42" r="38" />
             </svg>
-
-            <!-- Decorative Floating Paper Fans -->
-            <div class="ambient-fan fan-left" id="ambientFanLeft">🪭</div>
-            <div class="ambient-fan fan-right" id="ambientFanRight">🪭</div>
 
             <!-- Living Animation Canvas -->
             <div class="miko-mesh-container" id="mikoMeshContainer">
@@ -125,7 +121,7 @@ export class MinimalPetRig {
     }
 
     // Fox ring setup
-    this.foxRingCircumference = 2 * Math.PI * 92;
+    this.foxRingCircumference = 2 * Math.PI * 38;
     if (this.foxHoldRing) {
       this.foxHoldRing.style.strokeDasharray = `${this.foxRingCircumference}`;
       this.foxHoldRing.style.strokeDashoffset = `${this.foxRingCircumference}`;
@@ -355,8 +351,7 @@ export class MinimalPetRig {
     if (duration < 280) {
       // Quick tap
       if (this.state === 'dot') {
-        soundManager.playBabble(1.3);
-        // Soft pulse hint on dot
+        // Soft pulse hint on dot without noisy audio
         this.purePinkDot.style.transform = 'scale(1.35)';
         setTimeout(() => {
           if (this.purePinkDot) this.purePinkDot.style.transform = '';
@@ -384,10 +379,10 @@ export class MinimalPetRig {
   }
 
   onHeadPatInteraction() {
-    soundManager.playBabble(1.0);
     if (this.engine) {
       this.engine.playReaction();
     }
+    soundManager.playPetPurr();
     this.triggerDialogue(getRandomDialogue('pokes'));
     this.resetStayCountdown();
   }
@@ -478,19 +473,15 @@ export class MinimalPetRig {
     this.bubbleText.textContent = '';
     let i = 0;
 
-    soundManager.speakText(text);
-
+    // Silent typing without keyboard click or vocal babble
     this.typewriterInterval = setInterval(() => {
       if (i < text.length) {
         this.bubbleText.textContent += text[i];
-        if (i % 2 === 0 && /[a-zA-Z]/.test(text[i])) {
-          soundManager.playBabble();
-        }
         i++;
       } else {
         clearInterval(this.typewriterInterval);
       }
-    }, 28);
+    }, 22);
 
     if (this.onTalk) this.onTalk(text);
   }

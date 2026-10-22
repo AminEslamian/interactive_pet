@@ -12,10 +12,10 @@ let mainWindow = null;
 let tray = null;
 let currentMode = 'dot'; // 'dot' or 'awake'
 
-// Window dimensions
-const DOT_SIZE = 64;
-const FOX_WIDTH = 520;
-const FOX_HEIGHT = 460;
+// Window dimensions (Miniature desktop pet)
+const DOT_SIZE = 56;
+const FOX_WIDTH = 150;
+const FOX_HEIGHT = 125;
 
 // Persistent position file path
 const configPath = path.join(app.getPath('userData'), 'miko_position.json');

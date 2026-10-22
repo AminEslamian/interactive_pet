@@ -211,20 +211,21 @@ body {
 /* Sassy Speech Bubble */
 .miko-speech-bubble {
   position: relative;
-  max-width: 440px;
-  min-width: 250px;
-  background: rgba(22, 23, 38, 0.88);
-  backdrop-filter: blur(24px);
+  max-width: 140px;
+  min-width: 75px;
+  background: rgba(22, 23, 38, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(254, 209, 214, 0.25);
-  padding: 12px 20px;
-  border-radius: 24px;
-  margin-bottom: 6px;
-  box-shadow: var(--shadow-ambient), var(--shadow-glow);
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-bottom: 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
   cursor: pointer;
   opacity: 0;
-  transform: translateY(8px) scale(0.96);
+  transform: translateY(4px) scale(0.96);
   pointer-events: none;
-  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 50;
 }
 
@@ -235,8 +236,8 @@ body {
 }
 
 .speech-bubble-inner {
-  font-size: 0.92rem;
-  line-height: 1.5;
+  font-size: 0.68rem;
+  line-height: 1.32;
   color: #fff;
   font-weight: 450;
   display: inline;
@@ -244,10 +245,10 @@ body {
 
 .bubble-cursor {
   display: inline-block;
-  width: 3px;
-  height: 14px;
+  width: 2px;
+  height: 9px;
   background: var(--color-sakura);
-  margin-left: 4px;
+  margin-left: 2px;
   vertical-align: middle;
   animation: blinkCursor 0.8s infinite;
 }
@@ -259,12 +260,12 @@ body {
 
 .speech-tail {
   position: absolute;
-  bottom: -8px;
+  bottom: -4px;
   left: 50%;
   transform: translateX(-50%) rotate(45deg);
-  width: 16px;
-  height: 16px;
-  background: rgba(22, 23, 38, 0.88);
+  width: 8px;
+  height: 8px;
+  background: rgba(22, 23, 38, 0.92);
   border-right: 1px solid rgba(254, 209, 214, 0.25);
   border-bottom: 1px solid rgba(254, 209, 214, 0.25);
 }
@@ -288,8 +289,8 @@ body {
 /* ========================================= */
 .miko-fox-actor {
   position: relative;
-  width: 500px;
-  height: 420px;
+  width: 88px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -297,8 +298,8 @@ body {
 
 .miko-mesh-container {
   position: relative;
-  width: 500px;
-  height: 420px;
+  width: 88px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -306,56 +307,28 @@ body {
 }
 
 .miko-mesh-canvas {
-  width: 500px;
-  height: 420px;
+  width: 88px;
+  height: 70px;
   display: block;
   cursor: pointer;
   touch-action: none;
-  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 25px rgba(254, 209, 214, 0.25));
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 12px rgba(254, 209, 214, 0.3));
   transition: filter 0.3s ease;
 }
 
 .miko-fox-actor:hover .miko-mesh-canvas {
-  filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 35px rgba(254, 209, 214, 0.45));
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 18px rgba(254, 209, 214, 0.5));
 }
 
 /* Ambient Floating Fans */
 .ambient-fan {
-  position: absolute;
-  font-size: 28px;
-  opacity: 0.65;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
-  pointer-events: none;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
-  z-index: 5;
-}
-
-.ambient-fan.fan-left {
-  top: 42%;
-  left: 20px;
-  animation: fanLevitateL 4s ease-in-out infinite;
-}
-
-.ambient-fan.fan-right {
-  top: 38%;
-  right: 20px;
-  animation: fanLevitateR 4.5s ease-in-out infinite;
-}
-
-@keyframes fanLevitateL {
-  0%, 100% { transform: translateY(0px) rotate(-12deg); }
-  50% { transform: translateY(-10px) rotate(-8deg); }
-}
-
-@keyframes fanLevitateR {
-  0%, 100% { transform: translateY(0px) rotate(14deg); }
-  50% { transform: translateY(-12px) rotate(18deg); }
+  display: none;
 }
 
 /* Cuddle Aura Pulse */
 .miko-cuddle-aura {
   position: absolute;
-  inset: -15px;
+  inset: -6px;
   border-radius: 50%;
   pointer-events: none;
   background: radial-gradient(circle, rgba(247, 215, 116, 0.35) 0%, rgba(254, 209, 214, 0.2) 50%, transparent 75%);
@@ -366,17 +339,17 @@ body {
 
 .miko-cuddle-aura.active {
   opacity: 1;
-  transform: scale(1.1);
+  transform: scale(1.08);
 }
 
 /* Drop Shadow */
 .miko-ground-shadow {
   position: absolute;
   bottom: 0px;
-  left: 20%;
-  width: 60%;
-  height: 22px;
-  background: radial-gradient(ellipse at center, rgba(30, 15, 25, 0.5) 0%, transparent 75%);
+  left: calc(50% - 24px);
+  width: 48px;
+  height: 8px;
+  background: radial-gradient(ellipse at center, rgba(30, 15, 25, 0.55) 0%, transparent 75%);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -386,10 +359,10 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 420px;
-  height: 420px;
-  margin-top: -210px;
-  margin-left: -210px;
+  width: 84px;
+  height: 84px;
+  margin-top: -42px;
+  margin-left: -42px;
   pointer-events: none;
   transform: rotate(-90deg);
   z-index: 60;
@@ -398,7 +371,7 @@ body {
 .hold-ring-circle {
   fill: none;
   stroke: var(--color-gold);
-  stroke-width: 4;
+  stroke-width: 2.5;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.05s linear;
 }
@@ -874,7 +847,7 @@ body.electron-desktop-mode.mode-dot .miko-entity-stage {
 
 /* In Electron Fox Awake Mode */
 body.electron-desktop-mode.mode-awake .miko-entity-stage {
-  width: 500px !important;
-  height: 420px !important;
+  width: 88px !important;
+  height: 70px !important;
 }
 
