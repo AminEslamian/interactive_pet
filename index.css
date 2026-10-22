@@ -404,95 +404,119 @@ body {
 }
 
 /* ========================================= */
-/* 1. ZEN DOT (Minimal Desktop Spirit Flame) */
+/* 1. MINIMAL SAKURA PINK DOT               */
 /* ========================================= */
 .zen-dot-mode {
   position: relative;
-  width: 90px;
-  height: 90px;
-  display: none;
+  width: 48px;
+  height: 48px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
 }
 
-.dot-ring-svg {
+.zen-dot-mode:active {
+  cursor: grabbing;
+}
+
+/* Pure Minimal Pink Dot (clean, no clutter) */
+.pure-pink-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffe6ec 0%, #ff9ebb 55%, #f06292 100%);
+  box-shadow: 
+    0 0 10px rgba(255, 142, 175, 0.8),
+    0 0 20px rgba(255, 110, 155, 0.45);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  animation: pinkDotBreathe 3.6s ease-in-out infinite;
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes pinkDotBreathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(255, 142, 175, 0.75), 0 0 16px rgba(255, 110, 155, 0.35);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 14px rgba(255, 155, 185, 0.95), 0 0 26px rgba(255, 130, 170, 0.6);
+  }
+}
+
+.zen-dot-mode:hover .pure-pink-dot {
+  transform: scale(1.18);
+  box-shadow: 0 0 16px rgba(255, 160, 190, 1), 0 0 28px rgba(255, 120, 160, 0.7);
+}
+
+/* Subtle circular charge ring while holding down */
+.dot-charge-svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none;
   transform: rotate(-90deg);
+  z-index: 1;
 }
 
-.dot-halo-bg {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.08);
-  stroke-width: 3;
-}
-
-.dot-timer-progress {
-  fill: none;
-  stroke: var(--color-sakura);
-  stroke-width: 3.5;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.8s linear;
-}
-
-.dot-hold-progress {
+.dot-charge-circle {
   fill: none;
   stroke: var(--color-gold);
-  stroke-width: 4;
+  stroke-width: 2.5;
   stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(247, 215, 116, 0.8));
   transition: stroke-dashoffset 0.05s linear;
 }
 
-.spirit-core {
-  position: relative;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff0f3 0%, #fed1d6 50%, #da627d 100%);
+/* Desktop Micro-Controls (Floating pill when Fox is awake) */
+.desktop-pet-controls {
+  position: absolute;
+  bottom: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 25px rgba(254, 209, 214, 0.8), 0 0 45px rgba(218, 98, 125, 0.4);
-  animation: spiritBreathe 3.5s ease-in-out infinite;
-}
-
-@keyframes spiritBreathe {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(254, 209, 214, 0.8); }
-  50% { transform: scale(1.08); box-shadow: 0 0 35px rgba(247, 215, 116, 0.9); }
-}
-
-.spirit-icon {
-  font-size: 20px;
-}
-
-.spirit-avatar-img {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  object-fit: cover;
-  position: relative;
-  z-index: 2;
-  box-shadow: 0 0 10px rgba(254, 209, 214, 0.45);
-}
-
-.dot-hover-hint {
-  position: absolute;
-  bottom: -28px;
-  font-size: 0.72rem;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-  letter-spacing: 0.5px;
+  gap: 8px;
+  background: rgba(18, 19, 32, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(254, 209, 214, 0.25);
+  border-radius: 20px;
+  padding: 4px 12px;
+  z-index: 80;
   opacity: 0;
-  transform: translateY(-4px);
-  transition: all 0.2s ease;
+  transform: translateY(6px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
 
-.zen-dot-mode:hover .dot-hover-hint {
+.miko-fox-actor:hover .desktop-pet-controls {
   opacity: 1;
   transform: translateY(0);
+}
+
+.desktop-control-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-sakura);
+  font-family: var(--font-family);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.desktop-control-btn:hover {
+  background: rgba(254, 209, 214, 0.18);
+  color: #fff;
 }
 
 /* Floating Sparks Stage */
@@ -786,3 +810,71 @@ body {
     height: 300px;
   }
 }
+
+/* ========================================= */
+/* 3. ELECTRON FLOATING DESKTOP APP MODE     */
+/* ========================================= */
+html.electron-app,
+body.electron-desktop-mode {
+  background: transparent !important;
+  background-color: transparent !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+body.electron-desktop-mode .zen-atmosphere,
+body.electron-desktop-mode #sakuraCanvas,
+body.electron-desktop-mode .zen-header,
+body.electron-desktop-mode .zen-actions-bar,
+body.electron-desktop-mode .zen-footer {
+  display: none !important;
+}
+
+body.electron-desktop-mode .zen-container {
+  height: 100vh !important;
+  width: 100vw !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+body.electron-desktop-mode .zen-main {
+  width: 100% !important;
+  height: 100% !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+body.electron-desktop-mode .miko-living-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* In Electron Dot Mode */
+body.electron-desktop-mode.mode-dot .miko-speech-bubble {
+  display: none !important;
+}
+
+body.electron-desktop-mode.mode-dot .miko-entity-stage {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* In Electron Fox Awake Mode */
+body.electron-desktop-mode.mode-awake .miko-entity-stage {
+  width: 500px !important;
+  height: 420px !important;
+}
+

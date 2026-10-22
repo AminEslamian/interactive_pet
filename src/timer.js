@@ -252,6 +252,9 @@ export class TimerManager {
     } catch {}
 
     this.pet.triggerDialogue(getRandomDialogue('eyeRestFinished'));
+    if (this.pet.startStayCountdown) {
+      this.pet.startStayCountdown();
+    }
     this.setMode('focus');
     this.start();
   }
